@@ -2,7 +2,7 @@ import numpy as np
 
 
 class GF:
-    def __init__(self, a, n=16, p="10011"):
+    def __init__(self, a, n=16, p="11001"):
         self.n = n
         self.p = p
         self.decimals = int(np.log2(self.n))
@@ -105,7 +105,7 @@ def z2_z_x_part():
             x2[i] = None
         else:
             # right part of ex
-            x2[i] = x[i] + GF(1) + GF("10") * div
+            x2[i] = x[i] + GF("11") + GF("100") * div
         print(f"{z[i]}\t{z2[i]}\t{x[i]}\t{div}\t{x2[i]}")
 
     x_z = list()
@@ -123,54 +123,55 @@ def z2_z_x_part():
         print(f"({pair[0]}, {pair[0] * pair[1]})", end=", ")
 
 
-def dots_sum():
-    def division(a, b, p):
-        for j in range(p):
-            if b * j % p == a:
-                return j
+def division(a, b, p):
+    for j in range(p):
+        if b * j % p == a:
+            return j
 
-    x1 = 17
-    y1 = 9
-    x2 = 4
-    y2 = 28
-    p = 31
-    i = 2
-    while i < 50:
+
+def points_sum(x1, y1, x2, y2, p):
+    print(f"m = ({y2} - {y1})/({x2} - {x1}) = {(y2-y1)%p}/{(x2-x1)%p}", end="")
+    m = division((y2 - y1) % p, (x2 - x1) % p, p)
+    print(f" = {m}")
+    print(f"{(x2-x1)%p}*{m} = {(x2-x1)%p * m} mod {p} = {(y2-y1)%p}")
+    x3 = (m ** 2 - x1 - x2) % p
+    print(f"x3 = {m} ** 2 - {x1} - {x2} = {m**2%p} - {x1} - {x2} = {x3}")
+    y3 = (m * (x1 - x3) - y1) % p
+    print(f"y3 = {m} * ({x1} - {x3}) - {y1} = {m*(x1-x3)%p} - {y1} = {y3}")
+    print(f"P + Q = ({x1},{y1}) + ({x2},{y2}) = ({x3},{y3})")
+    return x3, y3
+
+
+def point_double(x1, y1, p, a):
+    print(f"q = (3 * {x1}**2 + {a})/(2 * {y1}) = {(3 * x1**2 + a) % p}/{(2 * y1) % p}", end="")
+    q = division((3 * x1**2 + a) % p, (2 * y1) % p, p)
+    print(f" = {q}")
+    print(f"{(2 * y1) % p}*{q} = {(2 * y1) % p * q} mod {p} = {(3 * x1**2 + a) % p}")
+    x4 = (q ** 2 - 2 * x1) % p
+    print(f"x4 = {q} ** 2 - 2*{x1} = {q**2%p} -  {2*x1%p} = {x4}")
+    y4 = (q * (x1 - x4) - y1) % p
+    print(f"y4 = {q} * ({x1} - {x4}) - {y1} = {q*(x1-x4)%p} - {y1} = {y4}")
+    print(f"2P = ({x4},{y4})")
+    return x4, y4
+
+
+if __name__ == '__main__':
+    i = 4
+    x1 = GF("11")
+    y1 = GF("1101")
+    x2 = GF("1101")
+    y2 = GF("0")
+    while i < 7:
         i += 1
-        print(f"m = ({y2} - {y1})/({x2} - {x1})", end="")
-        m = division((y2 - y1) % p, (x2 - x1) % p, p)
-        print(f" = {m}")
-        x3 = (m ** 2 - x1 - x2) % p
-        print(f"x3 = ({m} ** 2 - {x1} - {x2}) = {x3}")
-        y3 = (m * (x1 - x3) - y1) % p
-        print(f"y3 = ({m} * ({x1} - {x3}) - {y1}) = {y3}")
-        print(f"{i}P = ({x1},{y1}) + ({x2},{y2}) = ({x3},{y3})")
-        if (x3, y3) == (x1, y1):
-            print("END")
-            break
+        L = (y1 + y2) / (x1 + x2)
+        print(L)
+        x3 = L * L + L + x1 + x2 + GF(1)
+        y3 = L*(x1 + x3) + x3 + y1
+        print(f"{i}*({x1},{y1}) = ({x3},{y3})")
         x2 = x3
         y2 = y3
 
 
-if __name__ == '__main__':
-    z = list()
-    z2 = list()
-    x = [GF(1), GF("1000")]
-    x2 = [GF(0), GF("11")]
-    for i in range(16):
-        z.append(GF(i))
-        z2.append(GF(i)*GF(i) + GF(i))
 
-    x_z = list()
-    for i in range(len(z)):
-        for j in range(len(x)):
-            if z2[i] == x2[j]:
-                x_z.append((x[j], z[i]))
 
-    print("(x,z):")
-    for pair in x_z:
-        print(f"({pair[0]}, {pair[1]})", end=", ")
-    print()
-    print("(x,y):")
-    for pair in x_z:
-        print(f"({pair[0]}, {pair[0] * pair[1]})", end=", ")
+
